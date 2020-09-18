@@ -1,6 +1,8 @@
 # BDDQuery 🕵🏼‍♀️
 
-BDDQuery é um cliente desenvolvido para publicação dos dados no BigQuery da Base dos Dados. O intuito do projeto é facilitar o acesso a dados brasileiros através de tabelas públicas no BigQuery. Qualquer pessoa poderá fazer queries em bases tratadas, documentadas e estáveis - uma simples consulta de SQL será o suficiente para cruzamento das bases que você precisa.
+BDDQuery é um cliente desenvolvido para publicação dos dados no BigQuery da Base dos Dados. O intuito do projeto é **facilitar o acesso a dados brasileiros através de tabelas públicas no BigQuery**. 
+
+Qualquer pessoa poderá fazer queries em bases tratadas, documentadas e estáveis - uma simples consulta de SQL será o suficiente para cruzamento das bases que você precisa.
 
 ## Porque o BigQuery?
 
