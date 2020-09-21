@@ -179,11 +179,24 @@ def init_table(ctx, dataset_id, table_id, data_sample_path, replace):
 @click.option(
     "--job_config_params", default=None, help="File to advanced load config params "
 )
+@click.option(
+    "--partitioned",
+    "-p",
+    default=False,
+    help="[True|False] whether table is partitioned",
+)
+@click.option(
+    "--if_exists",
+    default="raise",
+    help="[raise|replace|pass] actions if table exists",
+)
 @click.pass_context
-def create_table(ctx, dataset_id, table_id, job_config_params):
+def create_table(ctx, dataset_id, table_id, job_config_params, partitioned, if_exists):
 
     Table(table_id=table_id, dataset_id=dataset_id, **ctx.obj).create(
         job_config_params=job_config_params,
+        partitioned=partitioned,
+        if_exists=if_exists,
     )
 
     click.echo(
@@ -199,8 +212,8 @@ def create_table(ctx, dataset_id, table_id, job_config_params):
 @click.argument("table_id")
 @click.option(
     "--mode",
-    default=["staging", "prod"],
-    help="Choose a table from a dataset to update",
+    default="all",
+    help="Choose a table from a dataset to update [all|staging|prod]",
 )
 @click.pass_context
 def update_table(ctx, dataset_id, table_id, mode):
@@ -211,7 +224,7 @@ def update_table(ctx, dataset_id, table_id, mode):
 
     click.echo(
         click.style(
-            f"Table `{dataset_id}.stagging_{table_id}` was created in BigQuery",
+            f"All tables `{dataset_id}.{table_id}*` were created in BigQuery",
             fg="green",
         )
     )
@@ -243,10 +256,7 @@ def publish_table(ctx, dataset_id, table_id, if_exists):
 @cli_table.command(name="delete", help="Delete BigQuery table")
 @click.argument("dataset_id")
 @click.argument("table_id")
-@click.argument(
-    "mode",
-    # help="Which table to delete [prod|staging]",
-)
+@click.option("--mode", help="Which table to delete [all|prod|staging]", required=True)
 @click.pass_context
 def delete_table(ctx, dataset_id, table_id, mode):
 
@@ -254,17 +264,12 @@ def delete_table(ctx, dataset_id, table_id, mode):
         mode=mode,
     )
 
-    if mode == "prod":
-        text = f"Table `{dataset_id}.{table_id}` was deleted from BigQuery"
-    elif mode == "staging":
-        text = f"Table `{dataset_id}.staging_{table_id}` was deleted from BigQuery"
-
-    click.echo(
-        click.style(
-            text,
-            fg="green",
-        )
-    )
+    # click.echo(
+    #     click.style(
+    #         text,
+    #         fg="green",
+    #     )
+    # )
 
 
 @click.group(name="storage")
@@ -308,19 +313,19 @@ def init_storage(ctx, bucket_name, replace, very_sure):
 @click.option(
     "--mode", "-m", required=True, help="[raw|staging] where to save the file"
 )
-@click.option("--bucket_name", default="basedosdados", help="Bucket name")
+@click.option("--partitions", help="Data partition as `value=key/value2=key2`")
 @click.option(
-    "--replace/--no-replace",
-    default=False,
-    help="Whether to replace current bucket files",
+    "--if_exists",
+    default="raise",
+    help="[raise|replace|pass] if file alread exists",
 )
 @click.pass_context
-def upload_storage(ctx, dataset_id, table_id, filepath, mode, bucket_name, replace):
+def upload_storage(ctx, dataset_id, table_id, filepath, mode, partitions, if_exists):
 
     ctx.obj.pop("bucket_name")
-    blob_name = Storage(
-        dataset_id, table_id, bucket_name=bucket_name, **ctx.obj
-    ).upload(filepath=filepath, mode=mode, replace=replace)
+    blob_name = Storage(dataset_id, table_id, **ctx.obj).upload(
+        filepath=filepath, mode=mode, partitions=partitions, if_exists=if_exists
+    )
 
     click.echo(
         click.style(

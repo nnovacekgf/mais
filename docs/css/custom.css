@@ -1,0 +1,30 @@
+div.autodoc-docstring {
+    padding-left: 20px;
+    margin-bottom: 30px;
+    font-style: italic;
+    /* border-left: 5px solid rgba(230, 230, 230); */
+}
+
+.wy-side-nav-search{
+    background: #2f9b45;
+}
+
+.wy-nav-top {
+    background: #2f9b45;
+}
+
+/* Para menu lateral
+.wy-nav-side {
+    background: #237434;
+} */
+
+/* Para código no texto */
+.rst-content code {
+    color: #237434;
+}
+
+div.autodoc-members {
+    padding-left: 20px;
+    margin-bottom: 15px;
+    border-left: 5px solid rgba(230, 230, 230);
+}
