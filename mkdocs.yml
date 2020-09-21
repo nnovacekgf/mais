@@ -1,0 +1,42 @@
+# See all options in: https://www.mkdocs.org/user-guide/configuration/
+
+# ==== Project information ====
+site_name: basedosdados/bases
+
+site_url: http://www.basedosdados.org/pages/bigquery # TODO: add our bq url here
+
+repo_url: https://github.com/base-dos-dados/bases/
+
+site_description: "Documentação do mais completo mecanismo de busca de bases de dados brasileiras e internacionais."
+
+site_author: "Base dos Dados"
+
+
+# === Documentation layout ====
+nav:
+    - Início: index.md
+    - Sobre: about.md
+
+
+# ==== Build directories ====
+theme: readthedocs
+
+plugins:
+  - search
+  - mkdocstrings
+
+# === Formatting options ====
+markdown_extensions:
+    - admonition
+    - codehilite
+    - mkautodoc
+    - smarty
+    - toc:
+        permalink: True
+        separator: "_"
+
+lang: # TODO: colcoar em portugues
+    - "pt"
+
+extra_css:
+    - css/custom.css

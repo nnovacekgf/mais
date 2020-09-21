@@ -1,3 +1,4 @@
+<!-- TODO: passar para steps -->
 Alô, vou mostar como usar o CLI do basedosdados para adicionar uma tabela nova.
 
 Vamos começar pelo diretório dos municípios, nosso pilar central :)

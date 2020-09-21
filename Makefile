@@ -15,3 +15,6 @@ update-env:
 
 attach-kernel:
 	python -m ipykernel install --user --name=$(REPO);
+
+run-docs: # To run docs local
+	mkdocs serve
