@@ -1,10 +1,13 @@
 .bases
+bases/pytest/*
 notebooks
 data
 secrets
 .ipynb*
 *.ipynb
+*.csv
 
+tests/tmp_bases/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

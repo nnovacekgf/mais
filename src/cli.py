@@ -51,29 +51,36 @@ def init_dataset(ctx, dataset_id, replace):
     )
 
 
+def mode_text(mode, verb, obj_id):
+
+    if mode == "all":
+        text = f"Datasets `{obj_id}` and `{obj_id}_staging` were {verb} in BigQuery"
+    elif mode == "staging":
+        text = f"Dataset `{obj_id}_stating` was {verb} in BigQuery"
+    elif mode == "prod":
+        text = f"Dataset `{obj_id}` was {verb} in BigQuery"
+
+    return text
+
+
 @cli_dataset.command(name="create", help="Create dataset on BigQuery")
 @click.argument("dataset_id")
 @click.option(
-    "--create_staging", default=True, help="Whether to create the staging dataset"
+    "--mode", "-m", default="all", help="What datasets to create [all|staging|prod]"
 )
 @click.option(
-    "--if_exists", default="raise", help="[raise, update] if dataset alread exists"
+    "--if_exists",
+    default="raise",
+    help="[raise|update|replace|pass] if dataset alread exists",
 )
 @click.pass_context
-def create_dataset(ctx, dataset_id, create_staging, if_exists):
+def create_dataset(ctx, dataset_id, mode, if_exists):
 
-    Dataset(dataset_id=dataset_id, **ctx.obj).create(
-        create_staging=create_staging, if_exists=if_exists
-    )
-
-    if create_staging:
-        text = f"Datasets `{dataset_id}` and `stagging_{dataset_id}` were created in BigQuery"
-    else:
-        text = f"Dataset `{dataset_id}`  was created in BigQuery"
+    Dataset(dataset_id=dataset_id, **ctx.obj).create(mode=mode, if_exists=if_exists)
 
     click.echo(
         click.style(
-            text,
+            mode_text(mode, "created", dataset_id),
             fg="green",
         )
     )
@@ -82,35 +89,51 @@ def create_dataset(ctx, dataset_id, create_staging, if_exists):
 @cli_dataset.command(name="update", help="Update dataset on BigQuery")
 @click.argument("dataset_id")
 @click.option(
-    "--update_staging", default=True, help="Whether to update the staging dataset"
+    "--mode", "-m", default="all", help="What datasets to create [all|staging|prod]"
 )
 @click.pass_context
-def update_dataset(ctx, dataset_id, update_staging):
+def update_dataset(ctx, dataset_id, mode):
 
-    Dataset(dataset_id=dataset_id, **ctx.obj).update(update_staging=update_staging)
-
-    if update_staging:
-        text = f"Datasets `{dataset_id}` and `stagging_{dataset_id}` were updated in BigQuery"
-    else:
-        text = f"Dataset `{dataset_id}`  was updated in BigQuery"
+    Dataset(dataset_id=dataset_id, **ctx.obj).update(mode=mode)
 
     click.echo(
         click.style(
-            text,
+            mode_text(mode, "updated", dataset_id),
             fg="green",
         )
     )
+
 
 @cli_dataset.command(name="publicize", help="Make a dataset public")
 @click.argument("dataset_id")
 @click.pass_context
 def publicize_dataset(ctx, dataset_id):
 
-    Dataset(dataset_id=dataset_id, **ctx.obj).publicize(dataset_id=dataset_id)
+    Dataset(dataset_id=dataset_id, **ctx.obj).publicize()
 
     click.echo(
         click.style(
-            text,
+            f"Dataset `{dataset_id}` became public!",
+            fg="green",
+        )
+    )
+
+
+@cli_dataset.command(name="delete", help="Delete dataset")
+@click.argument("dataset_id")
+@click.option(
+    "--mode", "-m", default="all", help="What datasets to create [all|staging|prod]"
+)
+@click.pass_context
+def delete_dataset(ctx, dataset_id, mode):
+
+    if click.confirm(f"Are you sure you want to delete `{dataset_id}`?"):
+
+        Dataset(dataset_id=dataset_id, **ctx.obj).delete(mode=mode)
+
+    click.echo(
+        click.style(
+            mode_text(mode, "deleted", dataset_id),
             fg="green",
         )
     )
@@ -156,11 +179,24 @@ def init_table(ctx, dataset_id, table_id, data_sample_path, replace):
 @click.option(
     "--job_config_params", default=None, help="File to advanced load config params "
 )
+@click.option(
+    "--partitioned",
+    "-p",
+    default=False,
+    help="[True|False] whether table is partitioned",
+)
+@click.option(
+    "--if_exists",
+    default="raise",
+    help="[raise|replace|pass] actions if table exists",
+)
 @click.pass_context
-def create_table(ctx, dataset_id, table_id, job_config_params):
+def create_table(ctx, dataset_id, table_id, job_config_params, partitioned, if_exists):
 
     Table(table_id=table_id, dataset_id=dataset_id, **ctx.obj).create(
         job_config_params=job_config_params,
+        partitioned=partitioned,
+        if_exists=if_exists,
     )
 
     click.echo(
@@ -176,8 +212,8 @@ def create_table(ctx, dataset_id, table_id, job_config_params):
 @click.argument("table_id")
 @click.option(
     "--mode",
-    default=["staging", "prod"],
-    help="Choose a table from a dataset to update",
+    default="all",
+    help="Choose a table from a dataset to update [all|staging|prod]",
 )
 @click.pass_context
 def update_table(ctx, dataset_id, table_id, mode):
@@ -188,7 +224,7 @@ def update_table(ctx, dataset_id, table_id, mode):
 
     click.echo(
         click.style(
-            f"Table `{dataset_id}.stagging_{table_id}` was created in BigQuery",
+            f"All tables `{dataset_id}.{table_id}*` were created in BigQuery",
             fg="green",
         )
     )
@@ -220,10 +256,7 @@ def publish_table(ctx, dataset_id, table_id, if_exists):
 @cli_table.command(name="delete", help="Delete BigQuery table")
 @click.argument("dataset_id")
 @click.argument("table_id")
-@click.argument(
-    "mode",
-    # help="Which table to delete [prod|staging]",
-)
+@click.option("--mode", help="Which table to delete [all|prod|staging]", required=True)
 @click.pass_context
 def delete_table(ctx, dataset_id, table_id, mode):
 
@@ -231,17 +264,12 @@ def delete_table(ctx, dataset_id, table_id, mode):
         mode=mode,
     )
 
-    if mode == "prod":
-        text = f"Table `{dataset_id}.{table_id}` was deleted from BigQuery"
-    elif mode == "staging":
-        text = f"Table `{dataset_id}.staging_{table_id}` was deleted from BigQuery"
-
-    click.echo(
-        click.style(
-            text,
-            fg="green",
-        )
-    )
+    # click.echo(
+    #     click.style(
+    #         text,
+    #         fg="green",
+    #     )
+    # )
 
 
 @click.group(name="storage")
@@ -285,19 +313,19 @@ def init_storage(ctx, bucket_name, replace, very_sure):
 @click.option(
     "--mode", "-m", required=True, help="[raw|staging] where to save the file"
 )
-@click.option("--bucket_name", default="basedosdados", help="Bucket name")
+@click.option("--partitions", help="Data partition as `value=key/value2=key2`")
 @click.option(
-    "--replace/--no-replace",
-    default=False,
-    help="Whether to replace current bucket files",
+    "--if_exists",
+    default="raise",
+    help="[raise|replace|pass] if file alread exists",
 )
 @click.pass_context
-def upload_storage(ctx, dataset_id, table_id, filepath, mode, bucket_name, replace):
+def upload_storage(ctx, dataset_id, table_id, filepath, mode, partitions, if_exists):
 
     ctx.obj.pop("bucket_name")
-    blob_name = Storage(
-        dataset_id, table_id, bucket_name=bucket_name, **ctx.obj
-    ).upload(filepath=filepath, mode=mode, replace=replace)
+    blob_name = Storage(dataset_id, table_id, **ctx.obj).upload(
+        filepath=filepath, mode=mode, partitions=partitions, if_exists=if_exists
+    )
 
     click.echo(
         click.style(
