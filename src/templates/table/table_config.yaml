@@ -15,7 +15,8 @@ description: |  # REQUIRED
 treated_by:
     name: <institution-name [IBGE, TSE]>  # REQUIRED
     code_url: <code-url-that-generated-table> # REQUIRED
-    website: <where to find raw data>
+    raw_data: <where to find raw data>
+    website: <your personal website>
     email: <name at institution.com>
     logo: <logo-url>
 
@@ -25,7 +26,7 @@ treated_by:
 published_by:
     name: <your-name [you]>  # REQUIRED
     code_url: <code-url-that-generated-table> # REQUIRED
-    website: <where to find raw data>
+    website: <your personal website>
     email: <your at email.com>
     logo: <your-pic>
 

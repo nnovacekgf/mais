@@ -4,12 +4,7 @@ ipykernel
 jupyter
 pyaml
 jinja2
-blacked
-# Docs - TODO: where to put this?
 mkdocs
 mkautodoc
-google-api-python-client
-google-cloud
-google-cloud-vision
-google.cloud.bigquery
-google.cloud.storage
+black
+pytest
